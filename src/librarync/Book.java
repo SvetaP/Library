@@ -1,13 +1,14 @@
-package librarync;
+package librarymodel;
 
 import java.util.*;
+import java.io.*;
 
-public class Book{
+public class Book implements Serializable{
 	
 	private List<String> authors;
 	private String title;
-	private Integer year;
-	private Integer pages;
+	private int year;
+	private int pages;
 	{
 		authors = new ArrayList<String>();
 	}
@@ -56,17 +57,26 @@ public class Book{
 	}
 	
 	public String toString() {
-		String str = null;
+		String str = "";
 		for(int i=0; i<authors.size(); i++)
 		{
 			str = str + authors.get(i)+" ";
 		}
 		return str + this.title + " " + this.year +  " " + this.pages;
 	}
+	
+	public String toStringAuthors() {
+		String str = "";
+		for(int i=0; i<authors.size(); i++)
+		{
+			str = str + authors.get(i)+" ";
+		}
+		return str;
+	}
 
 	public boolean equals(Object o) {
 		if (o != null && (o instanceof Book) && o.hashCode() == hashCode()) {
-			return ((Book) o).authors.equals(this.authors) && ((Book) o).title.equals(this.title) && ((Book) o).year.equals(this.year) && ((Book) o).pages.equals(this.pages);
+			return ((Book) o).authors.equals(this.authors) && ((Book) o).title.equals(this.title) && ((Book) o).year == this.year && ((Book) o).pages == this.pages;
 		}
 		else {
 			return false;
