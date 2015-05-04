@@ -1,8 +1,11 @@
-package librarync;
+package librarymodel;
 
+import java.io.Serializable;
 import java.util.*;
 
-public class Customer {
+public class Customer extends BaseEntity implements Serializable {
+	private static final long serialVersionUID = -4625214450718776815L;
+	
 	private String name;
 	private Integer number;
 	private List<Specimen> specimens;
@@ -15,7 +18,7 @@ public class Customer {
 		return this.name;
 	}
 	
-	public int getNumber () {
+	public Integer getNumber () {
 		return this.number;
 	}
 	

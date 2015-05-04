@@ -1,383 +1,175 @@
 package librarydao;
 
 import java.sql.*;
-import java.sql.Statement;
 import java.util.*;
-import java.util.zip.*;
-import java.beans.*;
-import java.io.*;
+import java.math.BigInteger;
 
+import librarymodel.Authors;
 import librarymodel.Book;
 
-public class BookDAO implements BookDbDAO {
+import org.apache.log4j.Logger;
 
-	public void add(Book book) {
+public class BookDAO implements GenericDbDAO<Book> {
+	private static final Logger log = Logger.getLogger(BookDAO.class);
+
+	public void add(Book entity) {
+		String SQL1 = "INSERT INTO BOOK (ID, TITLE, YEAR, PAGES) "
+				+ "VALUES (my_seq.nextval, ?, ?, ?)";
+		String SQL2 = "SELECT ID FROM BOOK WHERE TITLE = ? AND YEAR = ? AND PAGES = ?";
+		String SQL3 = "INSERT INTO BOOKAUTHORS (IDBOOK, IDAUTHORS) "
+				+ "VALUES (?, ?)";
+		PreparedStatement pst;
+		ResultSet rs;
 		try {
-			String url = "jdbc:oracle:thin:@localhost";
-			Locale.setDefault(Locale.ENGLISH);
-			DriverManager.registerDriver(new oracle.jdbc.driver.OracleDriver());
-			Connection con = DriverManager.getConnection(url, "EXAMPLE",
-					"oracle");
+			Connection con = Connect.connectionDb();
 			con.setAutoCommit(false);
-			PreparedStatement st = con.prepareStatement(""
-					+ "INSERT INTO BOOK (ID, AUTHORS, TITLE, YEAR, PAGES) "
-					+ "VALUES (my_seq.nextval, ?, ?, ?, ?)");
-			st.setString(1, book.toStringAuthors());
-			st.setString(2, book.getTitle());
-			st.setInt(3, book.getYear());
-			st.setInt(4, book.getPages());
-			st.executeUpdate();
+			pst = con.prepareStatement(SQL1);
+			pst.setString(1, entity.getTitle());
+			pst.setInt(2, entity.getYear());
+			pst.setInt(3, entity.getPages());
+			pst.executeUpdate();			
 			con.commit();
 			con.close();
 		} catch (SQLException e) {
-			System.out.println("SQLException");
+			log.error(e.getMessage(), e);
 		}
 		try {
-			File f1 = new File(book.toStringAuthors() + book.getTitle()
-					+ ".txt");
-			FileOutputStream fos = new FileOutputStream(f1);
-			GZIPOutputStream zos = new GZIPOutputStream(fos);
-			ObjectOutputStream oos = new ObjectOutputStream(zos);
-			oos.writeObject(book);
-			oos.close();
-		} catch (FileNotFoundException e) {
-			System.out.println("FileNotFoundException");
-		} catch (IOException e) {
-			System.out.println("IOException");
+			Connection con = Connect.connectionDb();
+			pst = con.prepareStatement(SQL2);
+			pst.setString(1, entity.getTitle());
+			pst.setInt(2, entity.getYear());
+			pst.setInt(3, entity.getPages());
+			rs = pst.executeQuery();
+			while (rs.next()) {
+				BigInteger b = BigInteger.valueOf(rs.getLong("ID"));
+				entity.setId(b);
+			}
+			pst.executeUpdate();
+			rs.close();
+			con.close();
+		} catch (SQLException e) {
+			log.error(e.getMessage(), e);
 		}
 		try {
-			File f2 = new File(book.toStringAuthors() + book.getTitle()
-					+ ".xml");
-			FileOutputStream out = new FileOutputStream(f2);
-			XMLEncoder xmlEncoder = new XMLEncoder(out);
-			xmlEncoder.writeObject(book);
-			xmlEncoder.flush();
-			xmlEncoder.close();
-		} catch (FileNotFoundException e) {
-			System.out.println("FileNotFoundException");
-		}
-
+			Connection con = Connect.connectionDb();
+			pst = con.prepareStatement(SQL3);
+			for(int i=0; i<entity.getAuthors().size(); i++){
+				con.setAutoCommit(false);
+				pst.setLong(1, entity.getId().longValue());
+				pst.setLong(2, entity.getAuthors().get(i).getId().longValue());
+				pst.executeUpdate();			
+				con.commit();
+			}
+			con.close();
+		} catch (SQLException e) {
+			log.error(e.getMessage(), e);
+		}		
 	}
 
-	public List<Book> getBooks() {
-		List<Book> books = new ArrayList<Book>();
+	public void delete(BigInteger ID) {
+		String SQL = "DELETE FROM BOOK WHERE ID =" + ID;
+		PreparedStatement st;
 		try {
-			String url = "jdbc:oracle:thin:@localhost";
-			Locale.setDefault(Locale.ENGLISH);
-			DriverManager.registerDriver(new oracle.jdbc.driver.OracleDriver());
-			Connection con = DriverManager.getConnection(url, "EXAMPLE",
-					"oracle");
-			Statement st = con.createStatement();
-			ResultSet rs = st
-					.executeQuery("select authors, title, year, pages from BOOK");
-			while (rs.next()) {
-				String authors1 = rs.getString("AUTHORS");
-				String[] authors2 = authors1.trim().split(",");
-				List<String> authors = new ArrayList<String>();
-				for (int i = 0; i < authors2.length; i++) {
-					authors.add(authors2[i].trim());
+			Connection con = Connect.connectionDb();
+			st = con.prepareStatement(SQL);
+			st.executeUpdate(SQL);
+			con.close();
+		} catch (SQLException e) {
+			log.error(e.getMessage(), e);
+		}		
+	}
+
+	public void update(Book entity) {
+		String SQL = "UPDATE BOOK SET TITLE = ? AND YEAR = ? AND PAGES = ? WHERE ID =" + entity.getId();
+		PreparedStatement st;
+		try {
+			Connection con = Connect.connectionDb();
+			con.setAutoCommit(false);
+			st = con.prepareStatement(SQL);
+			st.setString(1, entity.getTitle());
+			st.setInt(2, entity.getYear());
+			st.setInt(3, entity.getPages());
+			st.executeUpdate(SQL);
+			con.commit();
+			con.close();
+		} catch (SQLException e) {
+			log.error(e.getMessage(), e);
+		}
+	}
+
+	public List<Book> getAll() {
+		List<Book> books = new ArrayList<Book>();
+		List<Authors> authors = new ArrayList<Authors>();
+		String SQL1 = "SELECT TITLE, YEAR, PAGES FROM BOOK";
+		String SQL2 = "SELECT NAME FROM AUTHORS T1 INNER JOIN BOOKAUTHORS T2" 
+				+ "ON T1.ID=T2.IDAUTHORS INNER JOIN BOOK T3" 
+				+ "ON T2.IDBOOK=T3.ID WHERE TITLE = ? AND YEAR = ? AND PAGES = ?";
+		Statement st;
+		PreparedStatement pst;
+		ResultSet rs1 = null;
+		ResultSet rs2 = null;
+		try {
+			Connection con = Connect.connectionDb();
+			st = con.createStatement();
+			rs1 = st.executeQuery(SQL1);
+			while (rs1.next()) {
+				String title = rs1.getString("TITLE");
+				Integer year = rs1.getInt("YEAR");
+				Integer pages = rs1.getInt("PAGES");
+				pst = con.prepareStatement(SQL2);
+				pst.setString(1, title);
+				pst.setInt(2, year);
+				pst.setInt(3, pages);
+				rs2 = pst.executeQuery();
+				while(rs2.next()){
+					String name = rs2.getString("NAME");
+					Authors author = new Authors(name);
+					authors.add(author);
 				}
-				String title = rs.getString("TITLE");
-				Integer year = rs.getInt("YEAR");
-				Integer pages = rs.getInt("PAGES");
 				Book book = new Book(authors, title, year, pages);
 				books.add(book);
 			}
-			rs.close();
+			rs1.close();
+			rs2.close();
 			st.close();
+			con.close();
 		} catch (SQLException e) {
-			System.out.println("SQLException");
+			log.error(e.getMessage(), e);
 		}
 		return books;
 	}
 
-	public void updateAuthors(Book book, List<String> authors) {
+	public Book getByID(BigInteger ID) {
+		Book book = null;
+		List<Authors> authors = new ArrayList<Authors>();
+		String SQL1 = "SELECT TITLE, YEAR, PAGES FROM BOOK WHERE ID=" + ID;
+		String SQL2 = "SELECT NAME FROM AUTHORS T1 FULL JOIN BOOKAUTHORS T2"
+				+ "ON T1.ID=T2.IDAUTHORS WHERE IDBOOK=" + ID;
+		Statement st;
+		ResultSet rs1 = null;
+		ResultSet rs2 = null;
 		try {
-			String url = "jdbc:oracle:thin:@localhost";
-			Locale.setDefault(Locale.ENGLISH);
-			DriverManager.registerDriver(new oracle.jdbc.driver.OracleDriver());
-			Connection con = DriverManager.getConnection(url, "EXAMPLE",
-					"oracle");
-			con.setAutoCommit(false);
-			PreparedStatement st = con
-					.prepareStatement(""
-							+ "UPDATE BOOK SET AUTHORS = ? WHERE AUTHORS = ? AND TITLE = ? AND YEAR = ? AND PAGES = ?");
-			String authors2 = "";
-			for (int i = 0; i < authors.size(); i++)
-				authors2 += authors.get(i) + " ";
-			st.setString(1, authors2);
-			st.setString(2, book.toStringAuthors());
-			st.setString(3, book.getTitle());
-			st.setInt(4, book.getYear());
-			st.setInt(5, book.getPages());
-			st.executeUpdate();
-			con.commit();
-			con.close();
+			Connection con = Connect.connectionDb();
+			st = con.createStatement();
+			rs1 = st.executeQuery(SQL1);
+			while (rs1.next()) {
+				String title = rs1.getString("TITLE");
+				Integer year = rs1.getInt("YEAR");
+				Integer pages = rs1.getInt("PAGES");
+				rs2 = st.executeQuery(SQL2);
+				while(rs2.next()){
+					String name = rs2.getString("NAME");
+					Authors author = new Authors(name);
+					authors.add(author);
+				}
+				book = new Book(authors, title, year, pages);
+			}
+			rs1.close();
+			st.close();
 		} catch (SQLException e) {
-			System.out.println("SQLException");
+			log.error(e.getMessage(), e);
 		}
-		try {
-			File f1 = new File(book.toStringAuthors() + book.getTitle()
-					+ ".txt");
-			FileInputStream fis = new FileInputStream(f1);
-			GZIPInputStream gs = new GZIPInputStream(fis);
-			ObjectInputStream ois = new ObjectInputStream(gs);
-			Book b1 = (Book) ois.readObject();
-			fis.close();
-			ois.close();
-			b1.setAuthors(authors);
-			f1.delete();
-			File f2 = new File(b1.toStringAuthors() + b1.getTitle() + ".txt");
-			FileOutputStream fos = new FileOutputStream(f2);
-			GZIPOutputStream zos = new GZIPOutputStream(fos);
-			ObjectOutputStream oos = new ObjectOutputStream(zos);
-			oos.writeObject(b1);
-			oos.close();
-		} catch (FileNotFoundException e) {
-			System.out.println("FileNotFoundException");
-		} catch (ClassNotFoundException e) {
-			System.out.println("ClassNotFoundException");
-		} catch (IOException e) {
-			System.out.println("IOException");
-		}
-		try {
-			File f3 = new File(book.toStringAuthors() + book.getTitle()
-					+ ".xml");
-			FileInputStream in = new FileInputStream(f3);
-			XMLDecoder xmlDecoder = new XMLDecoder(in);
-			Book b2 = (Book) xmlDecoder.readObject();
-			xmlDecoder.close();
-			b2.setAuthors(authors);
-			f3.delete();
-			File f4 = new File(b2.toStringAuthors() + b2.getTitle() + ".xml");
-			FileOutputStream out = new FileOutputStream(f4);
-			XMLEncoder xmlEncoder = new XMLEncoder(out);
-			xmlEncoder.writeObject(b2);
-			xmlEncoder.flush();
-			xmlEncoder.close();
-		} catch (FileNotFoundException e) {
-			System.out.println("FileNotFoundException");
-		}
+		return book;
 	}
-
-	public void updateTitle(Book book, String title) {
-		try {
-			String url = "jdbc:oracle:thin:@localhost";
-			Locale.setDefault(Locale.ENGLISH);
-			DriverManager.registerDriver(new oracle.jdbc.driver.OracleDriver());
-			Connection con = DriverManager.getConnection(url, "EXAMPLE",
-					"oracle");
-			con.setAutoCommit(false);
-			PreparedStatement st = con
-					.prepareStatement(""
-							+ "UPDATE BOOK SET TITLE = ? WHERE AUTHORS = ? AND TITLE = ? AND YEAR = ? AND PAGES = ?");
-			st.setString(1, title);
-			st.setString(2, book.toStringAuthors());
-			st.setString(3, book.getTitle());
-			st.setInt(4, book.getYear());
-			st.setInt(5, book.getPages());
-			st.executeUpdate();
-			con.commit();
-			con.close();
-		} catch (SQLException e) {
-			System.out.println("SQLException");
-		}
-		try {
-			File f1 = new File(book.toStringAuthors() + book.getTitle()
-					+ ".txt");
-			FileInputStream fis = new FileInputStream(f1);
-			GZIPInputStream gs = new GZIPInputStream(fis);
-			ObjectInputStream ois = new ObjectInputStream(gs);
-			Book b1 = (Book) ois.readObject();
-			fis.close();
-			ois.close();
-			b1.setTitle(title);
-			f1.delete();
-			File f2 = new File(b1.toStringAuthors() + b1.getTitle() + ".txt");
-			FileOutputStream fos1 = new FileOutputStream(f2);
-			GZIPOutputStream zos1 = new GZIPOutputStream(fos1);
-			ObjectOutputStream oos1 = new ObjectOutputStream(zos1);
-			oos1.writeObject(b1);
-			oos1.close();
-		} catch (FileNotFoundException e) {
-			System.out.println("FileNotFoundException");
-		} catch (ClassNotFoundException e) {
-			System.out.println("ClassNotFoundException");
-		} catch (IOException e) {
-			System.out.println("IOException");
-		}
-		try {
-			File f3 = new File(book.toStringAuthors() + book.getTitle()
-					+ ".xml");
-			FileInputStream in = new FileInputStream(f3);
-			XMLDecoder xmlDecoder = new XMLDecoder(in);
-			Book b2 = (Book) xmlDecoder.readObject();
-			xmlDecoder.close();
-			b2.setTitle(title);
-			f3.delete();
-			File f4 = new File(b2.toStringAuthors() + b2.getTitle() + ".xml");
-			FileOutputStream out = new FileOutputStream(f4);
-			XMLEncoder xmlEncoder = new XMLEncoder(out);
-			xmlEncoder.writeObject(b2);
-			xmlEncoder.flush();
-			xmlEncoder.close();
-		} catch (FileNotFoundException e) {
-			System.out.println("FileNotFoundException");
-		}
-
-	}
-
-	public void updateYear(Book book, int year) {
-		try {
-			String url = "jdbc:oracle:thin:@localhost";
-			Locale.setDefault(Locale.ENGLISH);
-			DriverManager.registerDriver(new oracle.jdbc.driver.OracleDriver());
-			Connection con = DriverManager.getConnection(url, "EXAMPLE",
-					"oracle");
-			con.setAutoCommit(false);
-			PreparedStatement st = con
-					.prepareStatement(""
-							+ "UPDATE BOOK SET YEAR = ? WHERE AUTHORS = ? AND TITLE = ? AND YEAR = ? AND PAGES = ?");
-			st.setInt(1, year);
-			st.setString(2, book.toStringAuthors());
-			st.setString(3, book.getTitle());
-			st.setInt(4, book.getYear());
-			st.setInt(5, book.getPages());
-			st.executeUpdate();
-			con.commit();
-			con.close();
-		} catch (SQLException e) {
-			System.out.println("SQLException");
-		}
-		try {
-
-			File f1 = new File(book.toStringAuthors() + book.getTitle()
-					+ ".txt");
-			FileInputStream fis = new FileInputStream(f1);
-			GZIPInputStream gs = new GZIPInputStream(fis);
-			ObjectInputStream ois = new ObjectInputStream(gs);
-			Book b1 = (Book) ois.readObject();
-			fis.close();
-			ois.close();
-			b1.setYear(year);
-			FileOutputStream fos1 = new FileOutputStream(f1);
-			GZIPOutputStream zos1 = new GZIPOutputStream(fos1);
-			ObjectOutputStream oos1 = new ObjectOutputStream(zos1);
-			oos1.writeObject(b1);
-			oos1.close();
-		} catch (FileNotFoundException e) {
-			System.out.println("FileNotFoundException");
-		} catch (ClassNotFoundException e) {
-			System.out.println("ClassNotFoundException");
-		} catch (IOException e) {
-			System.out.println("IOException");
-		}
-		try {
-			File f3 = new File(book.toStringAuthors() + book.getTitle()
-					+ ".xml");
-			FileInputStream in = new FileInputStream(f3);
-			XMLDecoder xmlDecoder = new XMLDecoder(in);
-			Book b2 = (Book) xmlDecoder.readObject();
-			xmlDecoder.close();
-			b2.setYear(year);
-			FileOutputStream out = new FileOutputStream(f3);
-			XMLEncoder xmlEncoder = new XMLEncoder(out);
-			xmlEncoder.writeObject(b2);
-			xmlEncoder.flush();
-			xmlEncoder.close();
-		} catch (FileNotFoundException e) {
-			System.out.println("FileNotFoundException");
-		}
-	}
-
-	public void updatePage(Book book, int pages) {
-		try {
-			String url = "jdbc:oracle:thin:@localhost";
-			Locale.setDefault(Locale.ENGLISH);
-			DriverManager.registerDriver(new oracle.jdbc.driver.OracleDriver());
-			Connection con = DriverManager.getConnection(url, "EXAMPLE",
-					"oracle");
-			con.setAutoCommit(false);
-			PreparedStatement st = con
-					.prepareStatement(""
-							+ "UPDATE BOOK SET PAGES = ? WHERE AUTHORS = ? AND TITLE = ? AND YEAR = ? AND PAGES = ?");
-			st.setInt(1, pages);
-			st.setString(2, book.toStringAuthors());
-			st.setString(3, book.getTitle());
-			st.setInt(4, book.getYear());
-			st.setInt(5, book.getPages());
-			st.executeUpdate();
-			con.commit();
-			con.close();
-		} catch (SQLException e) {
-			System.out.println("SQLException");
-		}
-		try {
-			File f1 = new File(book.toStringAuthors() + book.getTitle()
-					+ ".txt");
-			FileInputStream fis = new FileInputStream(f1);
-			GZIPInputStream gs = new GZIPInputStream(fis);
-			ObjectInputStream ois = new ObjectInputStream(gs);
-			Book b1 = (Book) ois.readObject();
-			fis.close();
-			ois.close();
-			b1.setPages(pages);
-			FileOutputStream fos1 = new FileOutputStream(f1);
-			GZIPOutputStream zos1 = new GZIPOutputStream(fos1);
-			ObjectOutputStream oos1 = new ObjectOutputStream(zos1);
-			oos1.writeObject(b1);
-			oos1.close();
-		} catch (FileNotFoundException e) {
-			System.out.println("FileNotFoundException");
-		} catch (ClassNotFoundException e) {
-			System.out.println("ClassNotFoundException");
-		} catch (IOException e) {
-			System.out.println("IOException");
-		}
-		try {
-			File f3 = new File(book.toStringAuthors() + book.getTitle()
-					+ ".xml");
-			FileInputStream in = new FileInputStream(f3);
-			XMLDecoder xmlDecoder = new XMLDecoder(in);
-			Book b2 = (Book) xmlDecoder.readObject();
-			xmlDecoder.close();
-			b2.setPages(pages);
-			FileOutputStream out = new FileOutputStream(f3);
-			XMLEncoder xmlEncoder = new XMLEncoder(out);
-			xmlEncoder.writeObject(b2);
-			xmlEncoder.flush();
-			xmlEncoder.close();
-		} catch (FileNotFoundException e) {
-			System.out.println("FileNotFoundException");
-		}
-
-	}
-
-	public void delete(Book book) {
-		try {
-			String url = "jdbc:oracle:thin:@localhost";
-			Locale.setDefault(Locale.ENGLISH);
-			DriverManager.registerDriver(new oracle.jdbc.driver.OracleDriver());
-			Connection con = DriverManager.getConnection(url, "EXAMPLE",
-					"oracle");
-			PreparedStatement st = con
-					.prepareStatement(""
-							+ "DELETE FROM BOOK WHERE AUTHORS = ? AND TITLE = ? AND YEAR = ? AND PAGES = ?");
-			st.setString(1, book.toStringAuthors());
-			st.setString(2, book.getTitle());
-			st.setInt(3, book.getYear());
-			st.setInt(4, book.getPages());
-			st.executeUpdate();
-			con.close();
-		} catch (SQLException e) {
-			System.out.println("SQLException");
-		}
-
-		File f = new File(book.toStringAuthors() + book.getTitle() + ".txt");
-		f.delete();
-
-		File f2 = new File(book.toStringAuthors() + book.getTitle() + ".xml");
-		f2.delete();
-
-	}
+	
 }

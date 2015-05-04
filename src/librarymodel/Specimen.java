@@ -1,6 +1,10 @@
-package librarync;
+package librarymodel;
 
-public class Specimen {
+import java.io.Serializable;
+
+public class Specimen extends BaseEntity implements Serializable {
+	private static final long serialVersionUID = -2609525600664082748L;
+	
 	private String inventoryNumber;
 	private Book book;
 	private Availability availability; 

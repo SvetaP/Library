@@ -1,4 +1,4 @@
-package librarync;
+package librarymodel;
 
 public enum Availability {
 	AVAILABLE, NOTAVAILABLE
