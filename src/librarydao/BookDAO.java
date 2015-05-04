@@ -99,10 +99,10 @@ public class BookDAO implements GenericDbDAO<Book> {
 
 	public List<Book> getAll() {
 		List<Book> books = new ArrayList<Book>();
-		List<Authors> authors = new ArrayList<Authors>();
+		List<Authors> authors = null;
 		String SQL1 = "SELECT TITLE, YEAR, PAGES FROM BOOK";
-		String SQL2 = "SELECT NAME FROM AUTHORS T1 INNER JOIN BOOKAUTHORS T2" 
-				+ "ON T1.ID=T2.IDAUTHORS INNER JOIN BOOK T3" 
+		String SQL2 = "SELECT NAME FROM AUTHORS T1 INNER JOIN BOOKAUTHORS T2 " 
+				+ "ON T1.ID=T2.IDAUTHORS INNER JOIN BOOK T3 " 
 				+ "ON T2.IDBOOK=T3.ID WHERE TITLE = ? AND YEAR = ? AND PAGES = ?";
 		Statement st;
 		PreparedStatement pst;
@@ -121,6 +121,7 @@ public class BookDAO implements GenericDbDAO<Book> {
 				pst.setInt(2, year);
 				pst.setInt(3, pages);
 				rs2 = pst.executeQuery();
+				authors = new ArrayList<Authors>();
 				while(rs2.next()){
 					String name = rs2.getString("NAME");
 					Authors author = new Authors(name);
