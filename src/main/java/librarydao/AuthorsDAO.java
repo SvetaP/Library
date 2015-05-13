@@ -4,10 +4,14 @@ import java.math.BigInteger;
 import java.sql.*;
 import java.util.*;
 
+import javax.faces.bean.*;
+
 import org.apache.log4j.Logger;
 
 import librarymodel.Authors;
 
+@ManagedBean(name = "authorsDAO")
+@ApplicationScoped
 public class AuthorsDAO implements GenericDbDAO<Authors> {
 	private static final Logger log = Logger.getLogger(AuthorsDAO.class);
 
@@ -21,6 +25,8 @@ public class AuthorsDAO implements GenericDbDAO<Authors> {
 				BigInteger b = BigInteger.valueOf(rs.getLong("NEXTVAL"));
 				entity.setId(b);
 			}
+		} catch (ClassNotFoundException e) {
+			log.error(e.getMessage(), e);
 		} catch (SQLException e) {
 			log.error(e.getMessage(), e);
 		}
@@ -31,6 +37,8 @@ public class AuthorsDAO implements GenericDbDAO<Authors> {
 			pst.setString(2, entity.getName());
 			pst.executeUpdate();
 			con.commit();
+		} catch (ClassNotFoundException e) {
+			log.error(e.getMessage(), e);
 		} catch (SQLException e) {
 			log.error(e.getMessage(), e);
 		}
@@ -42,20 +50,24 @@ public class AuthorsDAO implements GenericDbDAO<Authors> {
 		try (Connection con = Connect.connectionDb();
 				PreparedStatement pst = con.prepareStatement(SQL);) {
 			pst.executeUpdate(SQL);
+		} catch (ClassNotFoundException e) {
+			log.error(e.getMessage(), e);
 		} catch (SQLException e) {
 			log.error(e.getMessage(), e);
 		}
 		log.info("Author deleted");
 	}
 
-	public void update(Authors entity) {
-		String SQL = "UPDATE AUTHORS SET NAME = ? WHERE ID =" + entity.getId();
+	public void update(Authors entity, BigInteger ID) {
+		String SQL = "UPDATE AUTHORS SET NAME = ? WHERE ID =" + ID;
 		try (Connection con = Connect.connectionDb();
 				PreparedStatement pst = con.prepareStatement(SQL);) {
 			con.setAutoCommit(false);
 			pst.setString(1, entity.getName());
 			pst.executeUpdate(SQL);
 			con.commit();
+		} catch (ClassNotFoundException e) {
+			log.error(e.getMessage(), e);
 		} catch (SQLException e) {
 			log.error(e.getMessage(), e);
 		}
@@ -73,6 +85,8 @@ public class AuthorsDAO implements GenericDbDAO<Authors> {
 				Authors author = new Authors(name);
 				authors.add(author);
 			}
+		} catch (ClassNotFoundException e) {
+			log.error(e.getMessage(), e);
 		} catch (SQLException e) {
 			log.error(e.getMessage(), e);
 		}
@@ -90,6 +104,8 @@ public class AuthorsDAO implements GenericDbDAO<Authors> {
 				String name = rs.getString("NAME");
 				author = new Authors(name);
 			}
+		} catch (ClassNotFoundException e) {
+			log.error(e.getMessage(), e);
 		} catch (SQLException e) {
 			log.error(e.getMessage(), e);
 		}
