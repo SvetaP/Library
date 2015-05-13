@@ -25,6 +25,8 @@ public class BookDAO implements GenericDbDAO<Book> {
 				BigInteger b = BigInteger.valueOf(rs.getLong("NEXTVAL"));
 				entity.setId(b);
 			}
+		} catch (ClassNotFoundException e) {
+			log.error(e.getMessage(), e);
 		} catch (SQLException e) {
 			log.error(e.getMessage(), e);
 		}
@@ -37,6 +39,8 @@ public class BookDAO implements GenericDbDAO<Book> {
 			pst.setInt(4, entity.getPages());
 			pst.executeUpdate();
 			con.commit();
+		} catch (ClassNotFoundException e) {
+			log.error(e.getMessage(), e);
 		} catch (SQLException e) {
 			log.error(e.getMessage(), e);
 		}
@@ -49,6 +53,8 @@ public class BookDAO implements GenericDbDAO<Book> {
 				pst.executeUpdate();
 				con.commit();
 			}
+		} catch (ClassNotFoundException e) {
+			log.error(e.getMessage(), e);
 		} catch (SQLException e) {
 			log.error(e.getMessage(), e);
 		}
@@ -60,15 +66,17 @@ public class BookDAO implements GenericDbDAO<Book> {
 		try (Connection con = Connect.connectionDb();
 				PreparedStatement pst = con.prepareStatement(SQL);) {
 			pst.executeUpdate();
+		} catch (ClassNotFoundException e) {
+			log.error(e.getMessage(), e);
 		} catch (SQLException e) {
 			log.error(e.getMessage(), e);
 		}
 		log.info("Book deleted");
 	}
 
-	public void update(Book entity) {
+	public void update(Book entity, BigInteger ID) {
 		String SQL = "UPDATE BOOK SET TITLE = ? AND YEAR = ? AND PAGES = ? WHERE ID ="
-				+ entity.getId();
+				+ ID;
 		try (Connection con = Connect.connectionDb();
 				PreparedStatement pst = con.prepareStatement(SQL);) {
 			con.setAutoCommit(false);
@@ -77,6 +85,8 @@ public class BookDAO implements GenericDbDAO<Book> {
 			pst.setInt(3, entity.getPages());
 			pst.executeUpdate(SQL);
 			con.commit();
+		} catch (ClassNotFoundException e) {
+			log.error(e.getMessage(), e);
 		} catch (SQLException e) {
 			log.error(e.getMessage(), e);
 		}
@@ -111,6 +121,8 @@ public class BookDAO implements GenericDbDAO<Book> {
 				Book book = new Book(authors, title, year, pages);
 				books.add(book);
 			}
+		} catch (ClassNotFoundException e) {
+			log.error(e.getMessage(), e);
 		} catch (SQLException e) {
 			log.error(e.getMessage(), e);
 		}
@@ -139,6 +151,8 @@ public class BookDAO implements GenericDbDAO<Book> {
 				}
 				book = new Book(authors, title, year, pages);
 			}
+		} catch (ClassNotFoundException e) {
+			log.error(e.getMessage(), e);
 		} catch (SQLException e) {
 			log.error(e.getMessage(), e);
 		}
