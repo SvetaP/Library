@@ -16,7 +16,7 @@ public class AuthorsDAO implements GenericDbDAO<Authors> {
 	private static final Logger log = Logger.getLogger(AuthorsDAO.class);
 
 	public void add(Authors entity) {
-		String SQL1 = "SELECT my_seq.nextval FROM DUAL";
+		String SQL1 = "SELECT my_seq_authors.nextval FROM DUAL";
 		String SQL2 = "INSERT INTO AUTHORS (ID, NAME) " + "VALUES (?, ?)";
 		try (Connection con = Connect.connectionDb();
 				Statement st = con.createStatement();) {
@@ -46,16 +46,23 @@ public class AuthorsDAO implements GenericDbDAO<Authors> {
 	}
 
 	public void delete(BigInteger ID) {
-		String SQL = "DELETE FROM AUTHORS WHERE ID =" + ID;
+		String SQL1 = "SELECT IDBOOK FROM BOOKAUTHORS WHERE IDAUTHORS =" + ID;
+		String SQL2 = "DELETE FROM AUTHORS WHERE ID =" + ID;
 		try (Connection con = Connect.connectionDb();
-				PreparedStatement pst = con.prepareStatement(SQL);) {
-			pst.executeUpdate(SQL);
+				Statement st1 = con.createStatement();
+				Statement st2 = con.createStatement();) {
+			ResultSet rs = st1.executeQuery(SQL1);
+			if (rs == null) {
+				st2.executeUpdate(SQL2);
+				log.info("Author deleted");
+			} else
+				log.info("Author wrote the book");
 		} catch (ClassNotFoundException e) {
 			log.error(e.getMessage(), e);
 		} catch (SQLException e) {
 			log.error(e.getMessage(), e);
 		}
-		log.info("Author deleted");
+
 	}
 
 	public void update(Authors entity, BigInteger ID) {

@@ -4,16 +4,20 @@ import java.sql.*;
 import java.util.*;
 import java.math.BigInteger;
 
+import javax.faces.bean.*;
+
 import librarymodel.Authors;
 import librarymodel.Book;
 
 import org.apache.log4j.Logger;
 
+@ManagedBean(name = "bookDAO")
+@ApplicationScoped
 public class BookDAO implements GenericDbDAO<Book> {
 	private static final Logger log = Logger.getLogger(BookDAO.class);
 
 	public void add(Book entity) {
-		String SQL1 = "SELECT my_seq.nextval FROM DUAL";
+		String SQL1 = "SELECT my_seq_book.nextval FROM DUAL";
 		String SQL2 = "INSERT INTO BOOK (ID, TITLE, YEAR, PAGES) "
 				+ "VALUES (?, ?, ?, ?)";
 		String SQL3 = "INSERT INTO BOOKAUTHORS (IDBOOK, IDAUTHORS) "
@@ -62,16 +66,27 @@ public class BookDAO implements GenericDbDAO<Book> {
 	}
 
 	public void delete(BigInteger ID) {
-		String SQL = "DELETE FROM BOOK WHERE ID =" + ID;
+		String SQL1 = "SELECT IDCUSTOMER FROM ISSUEBOOK T1 INNER JOIN SPECIMEN T2 "
+				+ "ON T1.IDSPECIMEN=T2.ID WHERE IDBOOK =" + ID;
+		String SQL2 = "DELETE FROM SPECIMEN WHERE IDBOOK =" + ID;
+		String SQL3 = "DELETE FROM BOOKAUTHORS WHERE IDBOOK =" + ID;
+		String SQL4 = "DELETE FROM BOOK WHERE ID =" + ID;
 		try (Connection con = Connect.connectionDb();
-				PreparedStatement pst = con.prepareStatement(SQL);) {
-			pst.executeUpdate();
+				Statement st1 = con.createStatement();
+				Statement st2 = con.createStatement();) {
+			ResultSet rs = st1.executeQuery(SQL1);
+			if (rs == null) {
+				st1.executeUpdate(SQL2);
+				st2.executeUpdate(SQL3);
+				st2.executeUpdate(SQL4);
+				log.info("Book deleted");
+			} else
+				log.info("Customer didn't return specimen");
 		} catch (ClassNotFoundException e) {
 			log.error(e.getMessage(), e);
 		} catch (SQLException e) {
 			log.error(e.getMessage(), e);
 		}
-		log.info("Book deleted");
 	}
 
 	public void update(Book entity, BigInteger ID) {
@@ -96,21 +111,19 @@ public class BookDAO implements GenericDbDAO<Book> {
 	public List<Book> getAll() {
 		List<Book> books = new ArrayList<Book>();
 		List<Authors> authors = null;
-		String SQL1 = "SELECT TITLE, YEAR, PAGES FROM BOOK";
+		String SQL1 = "SELECT ID, TITLE, YEAR, PAGES FROM BOOK";
 		String SQL2 = "SELECT NAME FROM AUTHORS T1 INNER JOIN BOOKAUTHORS T2 "
-				+ "ON T1.ID=T2.IDAUTHORS INNER JOIN BOOK T3 "
-				+ "ON T2.IDBOOK=T3.ID WHERE TITLE = ? AND YEAR = ? AND PAGES = ?";
+				+ "ON T1.ID=T2.IDAUTHORS WHERE IDBOOK = ?";
 		try (Connection con = Connect.connectionDb();
 				Statement st = con.createStatement();
 				PreparedStatement pst = con.prepareStatement(SQL2);) {
 			ResultSet rs1 = st.executeQuery(SQL1);
 			while (rs1.next()) {
+				BigInteger idbook = BigInteger.valueOf(rs1.getLong("ID"));
 				String title = rs1.getString("TITLE");
 				Integer year = rs1.getInt("YEAR");
 				Integer pages = rs1.getInt("PAGES");
-				pst.setString(1, title);
-				pst.setInt(2, year);
-				pst.setInt(3, pages);
+				pst.setLong(1, idbook.longValue());
 				ResultSet rs2 = pst.executeQuery();
 				authors = new ArrayList<Authors>();
 				while (rs2.next()) {
