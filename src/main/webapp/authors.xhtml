@@ -11,29 +11,34 @@
 <h:body>
 	<h:form>
 		<p:toolbar>
-
 			<f:facet name="left">
-				<p:commandButton value="Create" action="createauthor"
+				<p:commandButton value="Create" action="author?faces-redirect=true"
 					style="margin-right:20px;" />
-				<!-- <p:commandButton value="Update" action="updateauthor"
+				<p:commandButton value="Update"
+					action="authorupdate?faces-redirect=true"
 					style="margin-right:20px;" />
-				<p:commandButton value="Delete" action="deleteauthor"
+				<p:commandButton value="Delete"
+					action="authordelete?faces-redirect=true"
 					style="margin-right:20px;" />
-				<p:commandButton value="ID" action="#{}" style="margin-right:20px;" />-->
 			</f:facet>
 
 			<f:facet name="right">
-				<p:commandButton value="Home" action="index"
-					style="margin-right:20px;" />
+				<p:commandButton value="Home" action="index?faces-redirect=true" />
 			</f:facet>
-
 		</p:toolbar>
-
-		<p:dataTable var="author" value="#{authorsController.authors}">
-			<p:column headerText="ID">
-				<h:outputText action="#{author.getId}" />
+	</h:form>
+	<h:form>
+		<p:dataTable var="author" value="#{authorsController.authors}"
+			paginator="true" rows="10">
+			<f:facet name="header">
+            Authors
+       	</f:facet>
+			<p:column filterBy="#{author.getId()}" headerText="ID"
+				footerText="startsWith">
+				<h:outputText value="#{author.getId()}" />
 			</p:column>
-			<p:column headerText="Name">
+			<p:column filterBy="#{author.name}" headerText="Name"
+				footerText="startsWith">
 				<h:outputText value="#{author.name}" />
 			</p:column>
 		</p:dataTable>

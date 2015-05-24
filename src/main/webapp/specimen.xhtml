@@ -12,7 +12,7 @@
 	<h:form>
 		<p:toolbar>
 			<f:facet name="left">
-				<p:commandButton value="Back" action="authors?faces-redirect=true" />
+				<p:commandButton value="Back" action="specimens?faces-redirect=true" />
 			</f:facet>
 			<f:facet name="right">
 				<p:commandButton value="Home" action="index?faces-redirect=true" />
@@ -20,15 +20,19 @@
 		</p:toolbar>
 	</h:form>
 	<h:form>
-		<p:panel header="Create a new author" style="margin-bottom:20px">
+		<p:panel header="Create a new specimen" style="margin-bottom:20px">
 			<h:panelGrid columns="2" cellpadding="5">
-				<h:outputLabel value="Name : *" for="txt_name"></h:outputLabel>
-				<p:inputText maxlength="30" id="txt_name" value="#{authorsController.author.name}"
+				<h:outputLabel value="InventoryNumber : *" for="txt_inventoryNumber"></h:outputLabel>
+				<p:inputText maxlength="30" id="txt_inventoryNumber"
+					value="#{specimenController.specimen.inventoryNumber}"
+					required="true" />
+				<h:outputLabel value="ID book : *" for="txt_id"></h:outputLabel>
+				<p:inputText id="txt_id" value="#{specimenController.id}"
 					required="true" />
 
 				<p:commandButton id="btn_reset" value="Reset" type="reset" />
 				<p:commandButton id="btn_add" value="Add"
-					action="#{authorsController.add()}" />
+					action="#{specimenController.add()}" />
 			</h:panelGrid>
 		</p:panel>
 

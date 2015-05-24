@@ -1,0 +1,56 @@
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui">
+
+<h:head>
+	<title>Library</title>
+</h:head>
+
+<h:body>
+	<h:form>
+		<p:toolbar>
+			<f:facet name="left">
+				<p:commandButton value="Create"
+					action="specimen?faces-redirect=true" style="margin-right:20px;" />
+				<p:commandButton value="Update"
+					action="specimenupdate?faces-redirect=true"
+					style="margin-right:20px;" />
+				<p:commandButton value="Delete"
+					action="specimendelete?faces-redirect=true"
+					style="margin-right:20px;" />
+			</f:facet>
+			<f:facet name="right">
+				<p:commandButton value="Home" action="index?faces-redirect=true" />
+			</f:facet>
+		</p:toolbar>
+	</h:form>
+	<h:form>
+		<p:dataTable var="specimen" value="#{specimenController.specimens}"
+			paginator="true" rows="10">
+			<f:facet name="header">
+            Specimens
+        </f:facet>
+			<p:column filterBy="#{specimen.getId()}" headerText="ID"
+				footerText="startsWith">
+				<h:outputText value="#{specimen.getId()}" />
+			</p:column>
+			<p:column filterBy="#{specimen.inventoryNumber}"
+				headerText="InventiryNumber" footerText="endsWith"
+				filterMatchMode="endsWith">
+				<h:outputText value="#{specimen.inventoryNumber}" />
+			</p:column>
+			<p:column filterBy="#{specimen.toStringBook()}" headerText="Book"
+				footerText="contains" filterMatchMode="contains">
+				<h:outputText value="#{specimen.toStringBook()}" />
+			</p:column>
+			<p:column filterBy="#{specimen.toStringAvailability()}"
+				headerText="Availability" footerText="startsWith">
+				<h:outputText value="#{specimen.toStringAvailability()}" />
+			</p:column>
+		</p:dataTable>
+
+	</h:form>
+</h:body>
+</html>

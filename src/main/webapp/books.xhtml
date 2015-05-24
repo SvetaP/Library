@@ -1,0 +1,57 @@
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui">
+
+<h:head>
+	<title>Library</title>
+</h:head>
+
+<h:body>
+	<h:form>
+		<p:toolbar>
+			<f:facet name="left">
+				<p:commandButton value="Create" action="book?faces-redirect=true"
+					style="margin-right:20px;" />
+				<p:commandButton value="Update"
+					action="bookupdate?faces-redirect=true" style="margin-right:20px;" />
+				<p:commandButton value="Delete"
+					action="bookdelete?faces-redirect=true" style="margin-right:20px;" />
+			</f:facet>
+			<f:facet name="right">
+				<p:commandButton value="Home" action="index?faces-redirect=true" />
+			</f:facet>
+		</p:toolbar>
+	</h:form>
+	<h:form>
+		<p:dataTable var="book" value="#{bookController.books}"
+			paginator="true" rows="10">
+			<f:facet name="header">
+            Books
+        </f:facet>
+			<p:column filterBy="#{book.getId()}" headerText="ID"
+				footerText="startsWith">
+				<h:outputText value="#{book.getId()}" />
+			</p:column>
+			<p:column filterBy="#{book.toStringAuthors()}" headerText="Authors"
+				footerText="contains" filterMatchMode="contains">
+				<h:outputText value="#{book.toStringAuthors()}" />
+			</p:column>
+			<p:column filterBy="#{book.title}" headerText="Title"
+				footerText="contains" filterMatchMode="contains">
+				<h:outputText value="#{book.title}" />
+			</p:column>
+			<p:column filterBy="#{book.year}" headerText="Year"
+				footerText="endsWith" filterMatchMode="endsWith">
+				<h:outputText value="#{book.year}" />
+			</p:column>
+			<p:column filterBy="#{book.pages}" headerText="Pages"
+				footerText="startsWith">
+				<h:outputText value="#{book.pages}" />
+			</p:column>
+		</p:dataTable>
+
+	</h:form>
+</h:body>
+</html>

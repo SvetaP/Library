@@ -1,0 +1,58 @@
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui">
+
+<h:head>
+	<title>Library</title>
+</h:head>
+
+<h:body>
+	<h:form>
+		<p:toolbar>
+			<f:facet name="left">
+				<p:commandButton value="Back" action="customers?faces-redirect=true" />
+			</f:facet>
+			<f:facet name="right">
+				<p:commandButton value="Home" action="index?faces-redirect=true" />
+			</f:facet>
+		</p:toolbar>
+	</h:form>
+	<h:form>
+		<p:panel header="Create a new customer" style="margin-bottom:20px">
+			<h:panelGrid columns="2" cellpadding="5">
+				<h:outputLabel value="Name : *" for="txt_name"></h:outputLabel>
+				<p:inputText maxlength="50" id="txt_name"
+					value="#{customerController.customer.name}" required="true" />
+				<h:outputLabel value="Number : *" for="txt_number"></h:outputLabel>
+				<p:inputText maxlength="11" id="txt_number"
+					value="#{customerController.customer.number}" />
+
+				<p:commandButton id="btn_reset" value="Reset" type="reset" />
+				<p:commandButton id="btn_add" value="Add Customer"
+					action="#{customerController.add()}" />
+			</h:panelGrid>
+		</p:panel>
+	</h:form>
+	<h:form>
+		<p:panel header="Add/Delete specimens" style="margin-bottom:20px">
+			<h:panelGrid columns="2" cellpadding="5">
+				<h:outputLabel value="ID customer : *" for="txt_idcustomer"></h:outputLabel>
+				<p:inputText id="txt_idcustomer"
+					value="#{customerController.idcustomer}" required="true" />
+				<h:outputLabel value="ID specimen : *" for="txt_idspecimen"></h:outputLabel>
+				<p:inputText id="txt_idspecimen"
+					value="#{customerController.idspecimen}" required="true" />
+
+				<p:commandButton id="btn_reset" value="Reset" type="reset" />
+				<p:commandButton id="btn_add" value="Add Specimen"
+					action="#{customerController.addSpecimen()}" />
+				<p:commandButton id="btn_delete" value="Delete Specimen"
+					action="#{customerController.deleteSpecimen()}" />
+			</h:panelGrid>
+		</p:panel>
+
+	</h:form>
+</h:body>
+</html>

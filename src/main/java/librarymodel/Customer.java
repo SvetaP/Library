@@ -3,22 +3,22 @@ package librarymodel;
 import java.io.Serializable;
 import java.util.*;
 
+/**
+ * 
+ * @author SvetaP
+ */
 public class Customer extends BaseEntity implements Serializable {
-	private static final long serialVersionUID = -4625214450718776815L;
+	private static final long serialVersionUID = -1472834746843235083L;
 
 	private String name;
-	private Integer number;
+	private Long number;
 	private List<Specimen> specimens;
-
-	{
-		specimens = new ArrayList<Specimen>();
-	}
 
 	public String getName() {
 		return this.name;
 	}
 
-	public Integer getNumber() {
+	public Long getNumber() {
 		return this.number;
 	}
 
@@ -30,7 +30,7 @@ public class Customer extends BaseEntity implements Serializable {
 		this.name = name;
 	}
 
-	public void setNumber(Integer number) {
+	public void setNumber(Long number) {
 		this.number = number;
 	}
 
@@ -42,10 +42,26 @@ public class Customer extends BaseEntity implements Serializable {
 		super();
 	}
 
-	public Customer(String name, Integer number, List<Specimen> specimens) {
+	public Customer(String name, Long number) {
 		this.name = name;
 		this.number = number;
 		this.specimens = null;
+	}
+
+	public Customer(String name, Long number, List<Specimen> specimens) {
+		this.name = name;
+		this.number = number;
+		this.specimens = specimens;
+	}
+
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((name == null) ? 0 : name.hashCode());
+		result = prime * result + ((number == null) ? 0 : number.hashCode());
+		result = prime * result
+				+ ((specimens == null) ? 0 : specimens.hashCode());
+		return result;
 	}
 
 	public boolean equals(Object o) {
@@ -58,8 +74,16 @@ public class Customer extends BaseEntity implements Serializable {
 		}
 	}
 
-	public int hashCode() {
-		return (int) (((specimens.isEmpty() == true) ? 0 : specimens.hashCode())
-				+ ((name == null) ? 0 : name.hashCode()) + number);
+	public String toString() {
+		return name + number + specimens.toString();
 	}
+
+	public String toStringSpecimens() {
+		String str = "";
+		for (int i = 0; i < specimens.size(); i++) {
+			str += specimens.get(i).toString() + "\n";
+		}
+		return str;
+	}
+
 }

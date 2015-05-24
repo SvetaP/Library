@@ -2,9 +2,14 @@ package librarymodel;
 
 import java.io.Serializable;
 
+
+/**
+ * 
+ * @author SvetaP
+ */
 public class Authors extends BaseEntity implements Serializable {
-	private static final long serialVersionUID = 2057956507143731000L;
-	
+	private static final long serialVersionUID = 4246408845437681208L;
+
 	String name;
 
 	public String getName() {
@@ -14,12 +19,12 @@ public class Authors extends BaseEntity implements Serializable {
 	public void setName(String name) {
 		this.name = name;
 	}
-	
-	public Authors(){
+
+	public Authors() {
 		super();
 	}
-	
-	public Authors(String name){
+
+	public Authors(String name) {
 		this.name = name;
 	}
 
@@ -45,7 +50,7 @@ public class Authors extends BaseEntity implements Serializable {
 			return false;
 		return true;
 	}
-	
+
 	public String toString() {
 		return this.name;
 	}

@@ -1,0 +1,45 @@
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui">
+
+<h:head>
+	<title>Library</title>
+</h:head>
+
+<h:body>
+	<h:form>
+		<p:toolbar>
+			<f:facet name="left">
+				<p:commandButton value="Back" action="books?faces-redirect=true" />
+			</f:facet>
+			<f:facet name="right">
+				<p:commandButton value="Home" action="index?faces-redirect=true" />
+			</f:facet>
+		</p:toolbar>
+	</h:form>
+	<h:form>
+		<p:panel header="Update book" style="margin-bottom:20px">
+			<h:panelGrid columns="2" cellpadding="5">
+				<h:outputLabel value="Title : *" for="txt_title"></h:outputLabel>
+				<p:inputText maxlength="60" id="txt_title" value="#{bookController.book.title}"
+					required="true" />
+				<h:outputLabel value="Year : *" for="txt_year"></h:outputLabel>
+				<p:inputText maxlength="4" id="txt_year" value="#{bookController.book.year}"
+					required="true" />
+				<h:outputLabel value="Pages : *" for="txt_pages"></h:outputLabel>
+				<p:inputText maxlength="4" id="txt_pages" value="#{bookController.book.pages}"
+					required="true" />
+				<h:outputLabel value="ID : *" for="txt_idbook"></h:outputLabel>
+				<p:inputText id="txt_idbook" value="#{bookController.idbook}"
+					required="true" />
+
+				<p:commandButton id="btn_reset" value="Reset" type="reset" />
+				<p:commandButton id="btn_update" value="Update"
+					action="#{bookController.update()}" />
+			</h:panelGrid>
+		</p:panel>
+	</h:form>
+</h:body>
+</html>

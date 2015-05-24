@@ -5,16 +5,19 @@ import java.util.List;
 
 import librarymodel.BaseEntity;
 
+/**
+ * Generic interface for Data Access Object
+ *
+ * @author SvetaP
+ */
 public interface GenericDbDAO<T extends BaseEntity> {
-	
-	void add(T entity);
-	
+
 	void delete(BigInteger ID);
-	
-	void update(T entity);
+
+	void update(T entity, BigInteger ID);
 
 	List<T> getAll();
 
 	T getByID(BigInteger ID);
-	
+
 }

@@ -1,0 +1,34 @@
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui">
+
+<h:head>
+	<title>Library</title>
+</h:head>
+
+<h:body>
+	<h:form>
+		<p:toolbar>
+			<f:facet name="left">
+				<p:commandButton value="Create"
+					action="#{availabilityController.add}" />
+			</f:facet>
+			<f:facet name="right">
+				<p:commandButton value="Home" action="index?faces-redirect=true" />
+			</f:facet>
+		</p:toolbar>
+		<p:dataTable var="availability"
+			value="#{availabilityController.listavailability}">
+			<f:facet name="header">
+            Availability
+        </f:facet>
+			<p:column headerText="Name">
+				<h:outputText value="#{availability}" />
+			</p:column>
+		</p:dataTable>
+
+	</h:form>
+</h:body>
+</html>

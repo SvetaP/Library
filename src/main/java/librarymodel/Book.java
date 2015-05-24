@@ -1,10 +1,14 @@
 package librarymodel;
 
+import java.io.Serializable;
 import java.util.*;
-import java.io.*;
 
+/**
+ * 
+ * @author SvetaP
+ */
 public class Book extends BaseEntity implements Serializable {
-	private static final long serialVersionUID = 3443003900037673289L;
+	private static final long serialVersionUID = 978401494087999128L;
 
 	private List<Authors> authors;
 	private String title;
@@ -47,6 +51,13 @@ public class Book extends BaseEntity implements Serializable {
 		super();
 	}
 
+	public Book(String title, Integer year, Integer pages) {
+		this.authors = null;
+		this.title = title;
+		this.year = year;
+		this.pages = pages;
+	}
+
 	public Book(List<Authors> authors, String title, Integer year, Integer pages) {
 		this.authors = authors;
 		this.title = title;
@@ -55,17 +66,17 @@ public class Book extends BaseEntity implements Serializable {
 	}
 
 	public String toString() {
-		String str = "";
-		for (int i = 0; i < authors.size(); i++) {
-			str += authors.get(i).toString() + " ";
-		}
-		return str + this.title + " " + this.year + " " + this.pages;
+		if (authors.toString() == null) {
+			return this.title + " " + this.year + " " + this.pages;
+		} else
+			return authors.toString() + this.title + " " + this.year + " "
+					+ this.pages;
 	}
 
 	public String toStringAuthors() {
 		String str = "";
 		for (int i = 0; i < authors.size(); i++) {
-			str = str + authors.get(i).toString() + " ";
+			str += authors.get(i) + " ";
 		}
 		return str;
 	}

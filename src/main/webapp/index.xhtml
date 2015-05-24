@@ -9,8 +9,25 @@
 </h:head>
 
 <h:body>
-	<h:form id="Home">
-		<!-- <h:commandButton value="Authors" action="authors"></h:commandButton>-->
+	<h:form>
+		<p:toolbar>
+			<f:facet name="left">
+				<p:commandButton value="Authors"
+					action="authors?faces-redirect=true" style="margin-right:20px;" />
+				<p:commandButton value="Availability"
+					action="availability?faces-redirect=true"
+					style="margin-right:20px;" />
+				<p:commandButton value="Books" action="books?faces-redirect=true"
+					style="margin-right:20px;" />
+				<p:commandButton value="Customers"
+					action="customers?faces-redirect=true" style="margin-right:20px;" />
+				<p:commandButton value="Specimens"
+					action="specimens?faces-redirect=true" style="margin-right:20px;" />
+			</f:facet>
+		</p:toolbar>
+	</h:form>
+	<h:form>
+		<h:graphicImage value="http://img2.goodfon.ru/original/1024x768/a/32/library-biblioteka-knigi-polki.jpg?d=1" />
 	</h:form>
 </h:body>
 </html>
